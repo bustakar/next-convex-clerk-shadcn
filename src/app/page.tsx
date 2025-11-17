@@ -1,16 +1,14 @@
-"use client";
+'use client';
 
+import { SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import {
   Authenticated,
   Unauthenticated,
   useMutation,
   useQuery,
-} from "convex/react";
-import { api } from "../convex/_generated/api";
-import Link from "next/link";
-import { SignUpButton } from "@clerk/nextjs";
-import { SignInButton } from "@clerk/nextjs";
-import { UserButton } from "@clerk/nextjs";
+} from 'convex/react';
+import Link from 'next/link';
+import { api } from '../convex/_generated/api';
 
 export default function Home() {
   return (
@@ -69,7 +67,7 @@ function Content() {
 
   return (
     <div className="flex flex-col gap-8 max-w-lg mx-auto">
-      <p>Welcome {viewer ?? "Anonymous"}!</p>
+      <p>Welcome {viewer ?? 'Anonymous'}!</p>
       <p>
         Click the button below and open this page in another window - this data
         is persisted in the Convex cloud database!
@@ -85,30 +83,30 @@ function Content() {
         </button>
       </p>
       <p>
-        Numbers:{" "}
+        Numbers:{' '}
         {numbers?.length === 0
-          ? "Click the button!"
-          : (numbers?.join(", ") ?? "...")}
+          ? 'Click the button!'
+          : (numbers?.join(', ') ?? '...')}
       </p>
       <p>
-        Edit{" "}
+        Edit{' '}
         <code className="text-sm font-bold font-mono bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded-md">
           convex/myFunctions.ts
-        </code>{" "}
+        </code>{' '}
         to change your backend
       </p>
       <p>
-        Edit{" "}
+        Edit{' '}
         <code className="text-sm font-bold font-mono bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded-md">
           app/page.tsx
-        </code>{" "}
+        </code>{' '}
         to change your frontend
       </p>
       <p>
-        See the{" "}
+        See the{' '}
         <Link href="/server" className="underline hover:no-underline">
           /server route
-        </Link>{" "}
+        </Link>{' '}
         for an example of loading data in a server component
       </p>
       <div className="flex flex-col">
