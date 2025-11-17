@@ -1,5 +1,7 @@
 import { UserButton } from '@clerk/nextjs';
 
+import { BugReportForm } from './_components/bug-report-form';
+
 export default function DashboardPage() {
   return (
     <>
@@ -9,6 +11,7 @@ export default function DashboardPage() {
       </header>
       <main className="p-8 flex flex-col gap-8">
         <h1 className="text-4xl font-bold text-center">Dashboard</h1>
+        <BugReportForm />
       </main>
     </>
   );

@@ -1,6 +1,5 @@
 import eslintPlugin from '@eslint/js';
 import prettier from 'eslint-config-prettier';
-import react from 'eslint-plugin-react';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import unusedImports from 'eslint-plugin-unused-imports';
 import { defineConfig } from 'eslint/config';
@@ -29,21 +28,13 @@ export default defineConfig([
     files: ['**/*.{ts,tsx}'],
   })),
   {
-    name: 'project/react',
-    files: ['**/*.{tsx,jsx}'],
+    name: 'project/import-sorting',
+    files: ['**/*.{ts,tsx,js,jsx}'],
     plugins: {
-      react,
       'simple-import-sort': simpleImportSort,
       'unused-imports': unusedImports,
     },
-    settings: {
-      react: {
-        version: 'detect',
-      },
-    },
     rules: {
-      ...react.configs.recommended.rules,
-      'react/react-in-jsx-scope': 'off', // Not needed in Next.js
       'simple-import-sort/imports': 'error',
       'simple-import-sort/exports': 'error',
       'unused-imports/no-unused-imports': 'error',
@@ -56,19 +47,6 @@ export default defineConfig([
           argsIgnorePattern: '^_',
         },
       ],
-    },
-  },
-  {
-    name: 'project/import-sorting',
-    files: ['**/*.{ts,tsx,js,jsx}'],
-    plugins: {
-      'simple-import-sort': simpleImportSort,
-      'unused-imports': unusedImports,
-    },
-    rules: {
-      'simple-import-sort/imports': 'error',
-      'simple-import-sort/exports': 'error',
-      'unused-imports/no-unused-imports': 'error',
     },
   },
   prettier, // Must be last to override conflicting rules
