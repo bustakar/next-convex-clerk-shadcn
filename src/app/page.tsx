@@ -12,16 +12,11 @@ export default function Home() {
       <main className="p-8 flex flex-col gap-8">
         <div className="flex flex-col gap-8 w-96 mx-auto">
           <p>Log in to see the numbers</p>
-          <SignInButton mode="modal">
+          <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
             <button className="bg-foreground text-background px-4 py-2 rounded-md">
               Sign in
             </button>
           </SignInButton>
-          <SignUpButton mode="modal">
-            <button className="bg-foreground text-background px-4 py-2 rounded-md">
-              Sign up
-            </button>
-          </SignUpButton>
         </div>
       </main>
     </>
