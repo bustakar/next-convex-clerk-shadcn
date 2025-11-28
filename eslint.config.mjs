@@ -21,6 +21,11 @@ export default defineConfig([
     name: 'project/javascript-recommended',
     files: ['**/*.{js,mjs,cjs}'],
     ...eslintPlugin.configs.recommended,
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+      },
+    },
   },
   ...tseslint.configs.recommended.map((config) => ({
     ...config,
