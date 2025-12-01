@@ -1,0 +1,408 @@
+# Next.js + Convex + Clerk + shadcn/ui Starter Rules
+
+## Tech Stack
+
+This project uses:
+- Next.js 16 with App Router
+- React 19
+- TypeScript (strict mode)
+- Convex for backend/database
+- Clerk for authentication
+- shadcn/ui components (Radix primitives)
+- TailwindCSS 4
+- Tanstack React Form for form handling
+- Zod for validation
+- t3-oss/env-nextjs for type-safe environment variables
+- pnpm as package manager
+
+## Project Structure
+
+```
+src/
+├── app/                    # Next.js App Router pages
+│   └── [route]/
+│       └── _components/    # Route-specific components
+├── components/
+│   ├── ui/                 # shadcn/ui primitives
+│   └── [feature].tsx       # Feature components
+├── convex/                 # Convex backend functions
+│   └── [feature].ts        # Organized by domain
+├── hooks/                  # Global custom hooks
+├── lib/                    # Utility functions
+└── env.mjs                 # Type-safe environment variables
+```
+
+## Component Patterns
+
+### Exports
+- Use named exports for components: `export function MyComponent()`
+- Use default exports only for page.tsx and layout.tsx files
+
+### Function Style
+- Always use function declarations for components:
+
+```tsx
+// Correct
+export function MyComponent({ title }: Props) {
+  return <div>{title}</div>;
+}
+
+// Avoid
+const MyComponent = ({ title }: Props) => {
+  return <div>{title}</div>;
+};
+```
+
+### Props Typing
+- Use separate interface declarations for component props:
+
+```tsx
+interface MyComponentProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+export function MyComponent({ title, children }: MyComponentProps) {
+  return <div>{title}{children}</div>;
+}
+```
+
+- For extending native elements, use React.ComponentProps:
+
+```tsx
+interface ButtonProps extends React.ComponentProps<"button"> {
+  variant?: "primary" | "secondary";
+}
+```
+
+### Client vs Server Components
+- Most components in this codebase are client components due to Convex hooks
+- Add `'use client'` directive at the top when using:
+  - Convex hooks (useQuery, useMutation, useAction)
+  - React hooks (useState, useEffect, etc.)
+  - Event handlers
+  - Browser APIs
+
+## File Organization
+
+### Components
+- Global components: `src/components/`
+- UI primitives: `src/components/ui/`
+- Route-specific components: `src/app/[route]/_components/`
+
+### Hooks
+- Global hooks: `src/hooks/`
+- Feature-specific hooks: Collocate with related components
+
+### No Barrel Files
+- Import directly from component files, not through index.ts re-exports:
+
+```tsx
+// Correct
+import { Button } from '@/components/ui/button';
+
+// Avoid
+import { Button } from '@/components/ui';
+```
+
+## Form Handling
+
+Always use Tanstack React Form with Zod validation:
+
+```tsx
+'use client';
+
+import { useForm } from '@tanstack/react-form';
+import * as z from 'zod';
+
+const formSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+});
+
+function MyForm() {
+  const form = useForm({
+    defaultValues: {
+      email: '',
+      name: '',
+    },
+    validators: {
+      onSubmit: formSchema,
+    },
+    onSubmit: async ({ value }) => {
+      // Handle submission
+    },
+  });
+
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); form.handleSubmit(); }}>
+      <form.Field
+        name="email"
+        children={(field) => (
+          <Field data-invalid={field.state.meta.isTouched && !field.state.meta.isValid}>
+            <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+            <Input
+              id={field.name}
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+            />
+            {field.state.meta.isTouched && !field.state.meta.isValid && (
+              <FieldError errors={field.state.meta.errors} />
+            )}
+          </Field>
+        )}
+      />
+    </form>
+  );
+}
+```
+
+### Form Components
+- Use Field components from `@/components/ui/field`:
+  - `Field`, `FieldGroup`, `FieldLabel`, `FieldDescription`, `FieldError`
+- Define Zod schemas inline in the component file
+- Use sonner toasts for async operation feedback
+- Use inline FieldError for form validation errors
+
+## Styling
+
+### TailwindCSS with cn()
+- Use Tailwind utility classes for styling
+- Use `cn()` from `@/lib/utils` for conditional classes:
+
+```tsx
+import { cn } from '@/lib/utils';
+
+<div className={cn(
+  'flex items-center gap-2',
+  isActive && 'bg-primary text-primary-foreground',
+  className
+)} />
+```
+
+### UI Components
+- Always check if a shadcn/ui component exists before creating new ones
+- Compose existing components rather than creating from scratch
+- Follow patterns established in `src/components/ui/`
+
+## Convex Backend
+
+### File Organization
+- Organize Convex functions by feature/domain:
+
+```
+src/convex/
+├── users.ts      # User-related queries, mutations, actions
+├── posts.ts      # Post-related functions
+├── comments.ts   # Comment-related functions
+└── schema.ts     # Database schema
+```
+
+### Function Patterns
+
+```tsx
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
+
+export const getUser = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
+    return await ctx.db.get(args.userId);
+  },
+});
+
+export const updateUser = mutation({
+  args: { 
+    userId: v.id("users"),
+    name: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
+    await ctx.db.patch(args.userId, { name: args.name });
+  },
+});
+```
+
+### Authentication
+- Use Clerk middleware for Next.js route protection
+- Always verify auth in Convex functions that require it:
+
+```tsx
+const identity = await ctx.auth.getUserIdentity();
+if (!identity) {
+  throw new Error("Unauthorized");
+}
+```
+
+### Data Fetching
+- Use Suspense boundaries with Convex useQuery:
+
+```tsx
+import { Suspense } from 'react';
+
+function Page() {
+  return (
+    <Suspense fallback={<Skeleton />}>
+      <DataComponent />
+    </Suspense>
+  );
+}
+
+function DataComponent() {
+  const data = useQuery(api.posts.list);
+  return <div>{/* render data */}</div>;
+}
+```
+
+## Environment Variables
+
+Always use t3-oss/env for type-safe environment variables:
+
+### Adding New Variables
+1. Add to `src/env.mjs` with Zod validation:
+
+```tsx
+export const env = createEnv({
+  server: {
+    MY_SECRET_KEY: z.string().min(1),
+  },
+  client: {
+    NEXT_PUBLIC_MY_VAR: z.string().url(),
+  },
+  runtimeEnv: {
+    MY_SECRET_KEY: process.env.MY_SECRET_KEY,
+    NEXT_PUBLIC_MY_VAR: process.env.NEXT_PUBLIC_MY_VAR,
+  },
+});
+```
+
+2. Use the typed env object:
+
+```tsx
+import { env } from '@/env.mjs';
+
+const apiKey = env.MY_SECRET_KEY; // Type-safe!
+```
+
+### Never use process.env directly
+```tsx
+// Correct
+import { env } from '@/env.mjs';
+const url = env.NEXT_PUBLIC_CONVEX_URL;
+
+// Avoid
+const url = process.env.NEXT_PUBLIC_CONVEX_URL;
+```
+
+## Code Style
+
+### Comments
+- Write self-documenting code; minimize comments
+- Only add comments for complex business logic that isn't obvious
+
+### Early Returns
+Prefer early returns over nested conditionals:
+
+```tsx
+// Correct
+function processUser(user: User | null) {
+  if (!user) {
+    return null;
+  }
+  if (!user.isActive) {
+    return null;
+  }
+  return user.data;
+}
+
+// Avoid
+function processUser(user: User | null) {
+  if (user) {
+    if (user.isActive) {
+      return user.data;
+    }
+  }
+  return null;
+}
+```
+
+### Async/Await
+Always use async/await over .then() chains:
+
+```tsx
+// Correct
+async function fetchData() {
+  const response = await fetch('/api/data');
+  const data = await response.json();
+  return data;
+}
+
+// Avoid
+function fetchData() {
+  return fetch('/api/data')
+    .then(response => response.json())
+    .then(data => data);
+}
+```
+
+### Nullish Coalescing
+Prefer nullish coalescing (??) over OR (||):
+
+```tsx
+// Correct - only falls back for null/undefined
+const value = input ?? 'default';
+
+// Be careful - falls back for any falsy value (0, '', false)
+const value = input || 'default';
+```
+
+### Variable Declarations
+- Use `const` by default
+- Use `let` only when reassignment is necessary
+- Never use `var`
+
+### Import Sorting
+- Imports are automatically sorted by ESLint (simple-import-sort)
+- Order: external packages → internal aliases (@/) → relative imports
+- Unused imports are automatically removed
+
+## Error Handling
+
+### Forms
+- Use inline `FieldError` component for validation errors
+- Show errors after field is touched
+
+### Async Operations
+- Use sonner toasts for success/error feedback:
+
+```tsx
+import { toast } from 'sonner';
+
+async function handleSubmit(data: FormData) {
+  try {
+    await mutation(data);
+    toast.success('Saved successfully');
+  } catch (error) {
+    toast.error('Failed to save');
+  }
+}
+```
+
+## Path Aliases
+
+Use the `@/` alias for imports from src/:
+
+```tsx
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { env } from '@/env.mjs';
+```
+
