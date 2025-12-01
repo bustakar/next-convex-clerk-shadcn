@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import { BugReportFormDialog } from '@/app/dashboard/_components/bug-report-form';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -15,7 +16,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar variant="floating" {...props}>
       <SidebarHeader>
-        <Button>Open Form</Button>
+        <BugReportFormDialog trigger={<Button>Open Form</Button>} />
       </SidebarHeader>
       <SidebarContent>
         <NavMain />
