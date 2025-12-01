@@ -5,7 +5,7 @@ import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { ReactNode } from "react";
 
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 
 const convex = new ConvexReactClient(env.NEXT_PUBLIC_CONVEX_URL);
 

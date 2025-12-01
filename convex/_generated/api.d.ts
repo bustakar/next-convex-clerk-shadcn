@@ -8,13 +8,19 @@
  * @module
  */
 
+import type * as env from "../env.js";
+import type * as functions_auth from "../functions/auth.js";
+
 import type {
   ApiFromModules,
   FilterApi,
   FunctionReference,
 } from "convex/server";
 
-declare const fullApi: ApiFromModules<{}>;
+declare const fullApi: ApiFromModules<{
+  env: typeof env;
+  "functions/auth": typeof functions_auth;
+}>;
 
 /**
  * A utility for referencing Convex functions in your app's public API.

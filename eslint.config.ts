@@ -1,8 +1,8 @@
 import eslintPlugin from '@eslint/js';
+import { defineConfig } from 'eslint/config';
 import prettier from 'eslint-config-prettier';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import unusedImports from 'eslint-plugin-unused-imports';
-import { defineConfig } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig([
@@ -14,7 +14,7 @@ export default defineConfig([
       'public/',
       '.vscode/',
       'next-env.d.ts',
-      'src/convex/_generated/**',
+      'convex/_generated/**',
     ],
   },
   {
